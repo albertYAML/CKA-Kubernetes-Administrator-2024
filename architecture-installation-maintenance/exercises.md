@@ -69,7 +69,7 @@ spec:
     <b>volumeMounts:</b>
     <b>- mountPath: '/config'</b>
       <b>name: config-volume</b>
-  <b>volumes:</ins>
+  <b>volumes:</b>
   <b>- name: config-volume</b>
     <b>configMap:</b>
       <b>name: log-configmap</b>
