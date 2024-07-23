@@ -29,9 +29,11 @@
   First of all, we will dry-run this command to get a YAML template.
   ```
   kubectl run alpine-pod-pod --image=alpine:latest --restart=Never --dry-run=client -oyaml > pod.yaml
-
+  ```
+  ```
   cat pod.yaml
-
+  ```
+  ```
   apiVersion: v1
   kind: Pod
   metadata:
