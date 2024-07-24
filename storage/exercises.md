@@ -31,3 +31,37 @@ metadata:
   kubectl apply -f storageclasses.yaml 
   storageclass.storage.k8s.io/green-stc created
   ```
+
+## Exercise 2 - Persistent Volume Claim Resize
+  ### Modify the size of the existing Persistent Volume Claim (PVC) named yellow-pvc-cka to request 60Mi of storage from the yellow-pv-cka volume. Ensure that the PVC successfully resizes to the new size and remains in the Bound state.
+
+ **Solution:**  
+  To modify the request of our PVC, we can do it in the following way:
+  ```
+  kubectl edit pvc yellow-pvc-cka
+  ```
+
+  <pre>
+  apiVersion: v1
+kind: PersistentVolumeClaim
+...
+------------------------------------------------
+  resources:
+    requests:
+      <b>storage: 60Mi</b>
+  storageClassName: yellow-stc-cka
+  volumeMode: Filesystem
+------------------------------------------------
+...                  
+  </pre>
+
+  When the modification is saved, the following prompt should be displayed:
+  ```
+  persistentvolumeclaim/yellow-pvc-cka edited
+  ```
+  Verify that PVC remains in "Bound" state:
+  ```
+  kubectl get pvc   
+  NAME             STATUS   VOLUME          CAPACITY   ACCESS MODES   STORAGECLASS     VOLUMEATTRIBUTESCLASS   AGE
+  yellow-pvc-cka   Bound    yellow-pv-cka   100Mi      RWO            yellow-stc-cka   <unset>                 6m4s
+  ```

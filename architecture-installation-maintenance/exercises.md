@@ -105,6 +105,7 @@ kubectl replace -f pod.yaml --force
 apiVersion: v1
 kind: Pod
 metadata:
+...
 -------------------------------------------
   - command:
     - sh
@@ -112,6 +113,7 @@ metadata:
     <b>- echo 'Sony Tv Is Good' && sleep 3600</b>
     image: busybox
 -------------------------------------------
+...
   </pre>
 
 Then, replace the old pod with the following command.
