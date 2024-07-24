@@ -96,3 +96,35 @@ spec:
   kubectl apply -f pvc.yaml
   persistentvolumeclaim/red-pvc-cka created
   ```
+
+## Exercise 4 - Persistent Volume
+  ### Create a PersistentVolume (PV) named black-pv-cka with the following specifications:  
+  ### Requirements:
+  - Volume Type: hostPath
+  - Path: /opt/black-pv-cka
+  - Capacity: 50Mi
+
+**Solution:**  
+  It is not possible to make a template as we do with pods as we said. Create a .yaml archive with the following configuration and apply the YAML:
+  ```
+  vim pv.yaml
+  ```
+  <pre>
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  <b>name: black-pv-cka</b>
+spec:
+  capacity:
+    <b>storage: 50Mi</b>
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  <b>hostPath:</b>
+    <b>path: /opt/black-pv-cka</b>
+  </pre>
+
+  ```
+  kubectl apply -f pv.yaml 
+  persistentvolume/black-pv-cka created
+  ```
