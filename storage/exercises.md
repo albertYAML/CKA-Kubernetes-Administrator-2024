@@ -9,7 +9,7 @@ https://killercoda.com/sachin/course/CKA
   - Volume binding mode should be WaitForFirstConsumer
   - Volume expansion should be enabled
   
-  **Solution:**
+  **Solution:**  
   It is not possible to make a template as we do with pods, for example using kubectl run pod -oyaml. For this, we can go to the official kubernetes documentation (kubernetes.io) and take an example, where we will leave the YAML file with the characteristics that the exercise asks for.
   ```
   vim storageclasses.yaml
@@ -26,7 +26,7 @@ metadata:
 <b>volumeBindingMode: WaitForFirstConsumer</b>
 </pre>
 
-  Now let's create the StorageClass:
+  Now let's create the StorageClass, applying our created YAML file:
   ```
   kubectl apply -f storageclasses.yaml 
   storageclass.storage.k8s.io/green-stc created
