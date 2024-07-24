@@ -209,7 +209,7 @@ status: {}
 
   ### etcd-controlplane pod is running in kube-system environment, take backup and store it in /opt/cluster_backup.db file. Now, ETCD backup is stored at the path /opt/cluster_backup.db on the controlplane node. For --data-dir use /root/default.etcd , restore it on the controlplane node itself and also store restore console output store it in restore.txt 
   **Solution:**
-  The first thing to do would be to have the cacert , cert and etcd key paths. For it, we can make a describe of the log that is in the namespace kube-system and write down those values.
+  The first thing to do would be to have the cacert , cert and etcd key paths. For it, we can make a describe of the pod that is in the namespace kube-system and write down those values.
   <pre>
   kubectl describe pod etcd-controlplane -n kube-system
     etcd:
