@@ -1,5 +1,5 @@
 # Storage
-NOTE: The following exercises can be found on the killercoda website, created by Sachin HR.
+NOTE: The following exercises can be found on the Killercoda website, created by Sachin HR.  
 https://killercoda.com/sachin/course/CKA
 
 ## Exercise 1 - Storage Class
