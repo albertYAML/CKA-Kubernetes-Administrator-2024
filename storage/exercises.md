@@ -65,3 +65,34 @@ kind: PersistentVolumeClaim
   NAME             STATUS   VOLUME          CAPACITY   ACCESS MODES   STORAGECLASS     VOLUMEATTRIBUTESCLASS   AGE
   yellow-pvc-cka   Bound    yellow-pv-cka   100Mi      RWO            yellow-stc-cka   <unset>                 6m4s
   ```
+
+## Exercise 3 - Persistent Volume Claim
+  ### A persistent volume named red-pv-cka is available. Your task is to create a PersistentVolumeClaim (PVC) named red-pvc-cka and request 30Mi of storage from the red-pv-cka PersistentVolume (PV).
+  ### Requirements:
+  - Access mode: ReadWriteOnce
+  - Storage class: manual 
+
+ **Solution:**  
+  It is not possible to make a template as we do with pods as we said. Create a .yaml archive with the following configuration and apply the YAML:
+  ```
+  vim pvc.yaml
+  ```
+  <pre>
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  <b>name: red-pvc-cka</b>
+spec:
+  accessModes:
+    <b>- ReadWriteOnce</b>
+  volumeMode: Filesystem
+  resources:
+    requests:
+      <b>storage: 30Mi</b>
+  <b>storageClassName: "manual"</b>
+  </pre>
+
+  ```
+  kubectl apply -f pvc.yaml
+  persistentvolumeclaim/red-pvc-cka created
+  ```
