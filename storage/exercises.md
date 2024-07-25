@@ -224,7 +224,7 @@ spec:
   .....
   </pre>
 
-  You will have a yaml template like this:
+  You will have a nginx-pod-cka.yaml like this:
 
   ```
   apiVersion: v1
