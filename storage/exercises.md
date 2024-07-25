@@ -176,10 +176,7 @@ spec:
   kubectl apply -f pvc.yaml 
   persistentvolumeclaim/nginx-pvc-cka created
 
-  kubectl get pv,pvc
-  NAME                            CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                   STORAGECLASS    VOLUMEATTRIBUTESCLASS   REASON   AGE
-  persistentvolume/nginx-pv-cka   100Mi      RWO            Retain           Bound    default/nginx-pvc-cka   nginx-stc-cka   <unset>                          21m
-
+  kubectl get pvc
   NAME                                  STATUS    VOLUME         CAPACITY   ACCESS MODES   STORAGECLASS    VOLUMEATTRIBUTESCLASS   AGE
   persistentvolumeclaim/nginx-pvc-cka   Pending   nginx-pv-cka   0                         nginx-stc-cka   <unset>                 3s
   ```
