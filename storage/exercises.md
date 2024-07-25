@@ -128,3 +128,58 @@ spec:
   kubectl apply -f pv.yaml 
   persistentvolume/black-pv-cka created
   ```
+
+  ## Exercise 5 - Persistent Volume Claim, Pod
+
+  ### A Kubernetes pod definition file named nginx-pod-cka.yaml is available. Your task is to make the following modifications to the manifest file:
+  ### Requirements:
+  - Name the Pod alpine-pod-pod 
+  - Create a Persistent Volume Claim (PVC) with the name nginx-pvc-cka. This PVC should request 80Mi of storage from an existing Persistent Volume (PV) named nginx-pv-cka and Storage Class named nginx-stc-cka . Use the access mode ReadWriteOnce.
+  - Add the created nginx-pvc-cka PVC to the existing nginx-pod-cka POD definition.
+  - Mount the volume claimed by nginx-pvc-cka at the path /var/www/html within the nginx-pod-cka POD.
+  - Add tolerations with the key node-role.kubernetes.io/control-plane set to Exists and effect NoSchedule to the nginx-pod-cka Pod
+  - Ensure that the peach-pod-cka05-str POD is running and that the Persistent Volume (PV) is successfully bound.
+
+  **Solution:**
+  This is the nginx-pod-cka.yaml template:
+  ```
+  apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod-cka
+spec:
+  containers:
+    - name: my-container
+      image: nginx:latest
+  ```
+  The first step is to create the pvc.yaml file to create the Persisten Volume Claim, as we have done in other exercises.
+
+  <pre>
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  <b>name: nginx-pvc-cka</b>
+spec:
+  accessModes:
+    <b>- ReadWriteOnce</b>
+  volumeMode: Filesystem
+  resources:
+    requests:
+      <b>storage: 80Mi</b>
+  <b>storageClassName: "nginx-stc-cka"</b>
+  <b>volumeName: "nginx-pv-cka"</b>
+  </pre>
+
+  Then apply and we'll see that PVC is in "Pending" status.
+
+  ```
+  kubectl apply -f pvc.yaml 
+  persistentvolumeclaim/nginx-pvc-cka created
+
+  kubectl get pv,pvc
+  NAME                            CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                   STORAGECLASS    VOLUMEATTRIBUTESCLASS   REASON   AGE
+  persistentvolume/nginx-pv-cka   100Mi      RWO            Retain           Bound    default/nginx-pvc-cka   nginx-stc-cka   <unset>                          21m
+
+  NAME                                  STATUS    VOLUME         CAPACITY   ACCESS MODES   STORAGECLASS    VOLUMEATTRIBUTESCLASS   AGE
+  persistentvolumeclaim/nginx-pvc-cka   Pending   nginx-pv-cka   0                         nginx-stc-cka   <unset>                 3s
+  ```
