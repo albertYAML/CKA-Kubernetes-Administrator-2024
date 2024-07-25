@@ -232,13 +232,12 @@ spec:
   ```
   Ensure that the peach-pod-cka05-str POD is running and that the Persistent Volume (PV) is successfully bound:
   ```
-
-  ```
   kubectl get pods
   NAME            READY   STATUS    RESTARTS   AGE
   nginx-pod-cka   1/1     Running   0          2m10s
-  ```
+
   kubectl get pvc
   NAME            STATUS   VOLUME         CAPACITY   ACCESS MODES   STORAGECLASS    VOLUMEATTRIBUTESCLASS   AGE
   nginx-pvc-cka   Bound    nginx-pv-cka   100Mi      RWO            nginx-stc-cka   <unset>                 15m
   ```
+
