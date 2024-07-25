@@ -180,3 +180,65 @@ spec:
   NAME                                  STATUS    VOLUME         CAPACITY   ACCESS MODES   STORAGECLASS    VOLUMEATTRIBUTESCLASS   AGE
   persistentvolumeclaim/nginx-pvc-cka   Pending   nginx-pv-cka   0                         nginx-stc-cka   <unset>                 3s
   ```
+
+  The next step is to modify the nginx-pvc-cka.yaml and add the rest of the steps.
+  To add the created nginx-pvc-cka PVC to the existing nginx-pod-cka POD definition:
+
+  <pre>
+  spec:
+  .....
+  ----------------------------------------
+    <b>volumes:
+      - name: nginx-pvc-cka
+        persistentVolumeClaim:
+          claimName: nginx-pvc-cka</b>
+  ----------------------------------------
+  .....
+  </pre>
+
+  Mount the volume claimed by nginx-pvc-cka at the path /var/www/html within the nginx-pod-cka POD:
+
+  <pre>
+  spec:
+    containers:
+      - name: my-container
+        image: nginx:latest
+        <b>volumeMounts:
+          - mountPath: "/var/www/html"
+            name: nginx-pvc-cka</b>
+  ----------------------------------------
+    .....
+  </pre>
+
+  Add tolerations with the key node-role.kubernetes.io/control-plane set to Exists and effect NoSchedule to the nginx-pod-cka Pod:
+
+  <pre>
+  .....
+  ----------------------------------------
+  spec:
+    <b>tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"</b>
+  ----------------------------------------
+  .....
+  </pre>
+
+  Now apply the pod yaml:
+
+  ```
+  kubectl apply -f nginx-pod-cka.yaml
+  pod/nginx-pod-cka created
+  ```
+  Ensure that the peach-pod-cka05-str POD is running and that the Persistent Volume (PV) is successfully bound:
+  ```
+
+  ```
+  kubectl get pods
+  NAME            READY   STATUS    RESTARTS   AGE
+  nginx-pod-cka   1/1     Running   0          2m10s
+  ```
+  kubectl get pvc
+  NAME            STATUS   VOLUME         CAPACITY   ACCESS MODES   STORAGECLASS    VOLUMEATTRIBUTESCLASS   AGE
+  nginx-pvc-cka   Bound    nginx-pv-cka   100Mi      RWO            nginx-stc-cka   <unset>                 15m
+  ```
