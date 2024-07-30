@@ -265,7 +265,7 @@ spec:
   nginx-pvc-cka   Bound    nginx-pv-cka   100Mi      RWO            nginx-stc-cka   <unset>                 15m
   ```
 
-## Exercise 6 - Persistent Volume Claim, Pod
+## Exercise 6 - Persistent Volume, Persistent Volume Claim, Storage Class
 
   ### Your task involves setting up storage components in a Kubernetes cluster. Follow these steps:
   ### Requirements:
@@ -290,7 +290,7 @@ spec:
   **Solution:**
   First of all, we are gonna create the sc.yaml for the StorageClase Step 1:
 
-    ```
+  ```
   vim sc.yaml
 
   apiVersion: storage.k8s.io/v1
