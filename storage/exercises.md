@@ -265,3 +265,114 @@ spec:
   nginx-pvc-cka   Bound    nginx-pv-cka   100Mi      RWO            nginx-stc-cka   <unset>                 15m
   ```
 
+## Exercise 6 - Persistent Volume Claim, Pod
+
+  ### Your task involves setting up storage components in a Kubernetes cluster. Follow these steps:
+  ### Requirements:
+  - Step 1: Create a Storage Class named blue-stc-cka with the following properties:
+    Provisioner: kubernetes.io/no-provisioner
+    Volume binding mode: WaitForFirstConsumer
+
+  - Step 2: Create a Persistent Volume (PV) named blue-pv-cka with the following properties
+    Capacity: 100Mi
+    Access mode: ReadWriteOnce
+    Reclaim policy: Retain
+    Storage class: blue-stc-cka
+    Local path: /opt/blue-data-cka
+    Node affinity: Set node affinity to create this PV on controlplane
+
+  - Step 3: Create a Persistent Volume Claim (PVC) named blue-pvc-cka with the following properties:
+    Access mode: ReadWriteOnce
+    Storage class: blue-stc-cka
+    Storage request: 50Mi
+    The volume should be bound to blue-pv-cka .
+
+  **Solution:**
+  First of all, we are gonna create the sc.yaml for the StorageClase Step 1:
+
+    ```
+  vim sc.yaml
+
+  apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: blue-stc-cka
+    annotations:
+      storageclass.kubernetes.io/is-default-class: "false"
+  provisioner: kubernetes.io/no-provisioner
+  allowVolumeExpansion: true
+  volumeBindingMode: WaitForFirstConsumer
+  ```
+
+  Then, apply the .YAML using kubectl apply.
+
+  ```
+  kubectl apply -f sc.yaml
+  storageclass.storage.k8s.io/blue-stc-cka created
+  ```
+
+  In the second step, we will create the Persistent Volume yaml file with the following format:
+
+  ```
+  vim pv.yaml
+
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: blue-pv-cka
+  spec:
+    capacity:
+      storage: 100Mi
+    volumeMode: Filesystem
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: blue-stc-cka
+    local:
+      path: /opt/blue-data-cka
+    nodeAffinity:
+      required:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: hostname
+              operator: In
+              values:
+              - controlplane
+  ```
+
+  Then, apply the .YAML using kubectl apply.
+
+  ```
+  kubectl apply -f pv.yaml
+  persistentvolume/blue-pv-cka created
+  ```
+
+  The last step will be to create the pvc associated to the PV created previously.
+
+  ```
+  vim pvc.yaml
+
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: blue-pvc-cka
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: blue-stc-cka
+    resources:
+      requests:
+        storage: 50Mi
+    volumeName: blue-pv-cka
+  ```
+
+  We will check that the PVC is bound to the PV created and that both have the storageClass created.
+
+  ```
+  kubectl get pv,pvc
+  NAME                           CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+  persistentvolume/blue-pv-cka   100Mi      RWO            Retain           Bound    default/blue-pvc-cka   blue-stc-cka   <unset>                          62s
+
+  NAME                                 STATUS   VOLUME        CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+  persistentvolumeclaim/blue-pvc-cka   Bound    blue-pv-cka   100Mi      RWO            blue-stc-cka   <unset>                 2s
+  ```
