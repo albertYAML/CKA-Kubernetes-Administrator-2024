@@ -288,7 +288,7 @@ spec:
     The volume should be bound to blue-pv-cka .
 
   **Solution:**
-  First of all, we are gonna create the sc.yaml for the StorageClase Step 1:
+  First of all, we are gonna create the sc.yaml for the StorageClass Step 1:
 
   ```
   vim sc.yaml
@@ -347,7 +347,7 @@ spec:
   persistentvolume/blue-pv-cka created
   ```
 
-  The last step will be to create the pvc associated to the PV created previously.
+  The last step will be to create the pvc associated to the PV created previously and applying.
 
   ```
   vim pvc.yaml
@@ -365,7 +365,10 @@ spec:
         storage: 50Mi
     volumeName: blue-pv-cka
   ```
-
+  ```
+  kubectl apply -f pvc.yaml
+  persistentvolumeclaim/blue-pvc-cka created
+  ```
   We will check that the PVC is bound to the PV created and that both have the storageClass created.
 
   ```
@@ -375,4 +378,325 @@ spec:
 
   NAME                                 STATUS   VOLUME        CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
   persistentvolumeclaim/blue-pvc-cka   Bound    blue-pv-cka   100Mi      RWO            blue-stc-cka   <unset>                 2s
+  ```
+
+## Exercise 7 - Storage Class, Persistent Volume, Persistent Volume Claim, Pod
+
+  ### Your task involves setting up storage components in a Kubernetes cluster. Follow these steps:
+  ### Requirements:
+  - Step 1: Create a Storage Class named fast-storage with a provisioner of kubernetes.io/no-provisioner and a volumeBindingMode of Immediate 
+  - Step 2: Create a Persistent Volume (PV) named fast-pv-cka with a storage capacity of 50Mi using the fast-storage Storage Class with ReadWriteOnce permission and host path /tmp/fast-data
+  - Step 3: Create a Persistent Volume Claim (PVC) named fast-pvc-cka that requests 30Mi of storage from the fast-pv-cka PV(using the fast-storage Storage Class)
+  - Setp 4: Create a Pod named fast-pod-cka with nginx:latest image that uses the fast-pvc-cka PVC and mounts the volume at the path /app/data
+
+  **Solution:**
+  First of all, we are gonna create the sc.yaml for the StorageClass Step 1:
+
+  ```
+  vim sc.yaml
+
+  apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: fast-storage
+    annotations:
+      storageclass.kubernetes.io/is-default-class: "false"
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: Inmediate
+  ```
+
+  Then, apply the .YAML using kubectl apply.
+
+  ```
+  kubectl apply -f sc.yaml
+  storageclass.storage.k8s.io/fast-storage created
+  ```
+
+In the second step, we will create the Persistent Volume yaml file with the following format:
+
+  ```
+  vim pv.yaml
+
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: fast-pv-cka
+  spec:
+    capacity:
+      storage: 50Mi
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: fast-storage
+    hostPath:
+      path: /tmp/fast-data
+  ```
+
+  Then, apply the .YAML using kubectl apply.
+
+  ```
+  kubectl apply -f pv.yaml
+  persistentvolume/fast-pv-cka created
+  ```
+
+ Next, create the pvc associated to the PV created previously and applying.
+
+  ```
+  vim pvc.yaml
+
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: fast-pvc-cka
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 30Mi
+    volumeName: fast-pv-cka
+    storageClassName: fast-storage
+  ```
+  ```
+  kubectl apply -f pvc.yaml
+  persistentvolumeclaim/fast-pvc-cka created
+  ```
+
+  The last step will be to set up a Pod that uses the PVC previously created in the previous step.
+
+  ```
+  kubectl run fast-pod-cka --image=nginx:latest --dry-run=client -oyaml > pod.yaml 
+  ```
+
+  ```
+  vim pod.yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: null
+    labels:
+      run: fast-pod-cka
+    name: fast-pod-cka
+  spec:
+    containers:
+    - image: nginx:latest
+      name: fast-pod-cka
+      volumeMounts:
+        - mountPath: "/app/data"
+          name: fast-pvc-cka
+    volumes:
+      - name: fast-pvc-cka
+        persistentVolumeClaim:
+          claimName: fast-pvc-cka
+  ```
+
+  Now apply the .yaml to create the pod:
+
+  ```
+  kubectl apply -f pod.yaml
+  pod/fast-pod-cka created
+  ```
+
+## Exercise 8 - Persistent Volume Claim, Pod
+
+  ### Create a PersistentVolume (PV) and a PersistentVolumeClaim (PVC) using an existing storage class named gold-stc-cka to meet the following requirements:
+  ### Step 1: Create a Persistent Volume:
+  - Name the PV as gold-pv-cka
+  - Set the capacity to 50Mi
+  - Use the volume type hostpath with the path /opt/gold-stc-cka
+  - Assign the storage class as gold-stc-cka
+  - Ensure that the PV is created on node01 , where the /opt/gold-stc-cka directory already exists.
+  - Apply a label to the PV with key tier and value white 
+
+  ### Step 2: Create a Persistent Volume Claim:
+  - Name the PVC as gold-pvc-cka
+  - Request 30Mi of storage from the PV gold-pv-cka using the matchLabels criterion.
+  - Use the gold-stc-cka storage class
+  - Set the access mode to ReadWriteMany
+
+  **Solution:**
+
+  We will create the YAML file for the Persistent Volume with the characteristics requested in the statement:
+
+  ```
+  vim pv.yaml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: gold-pv-cka
+  labels:
+    tier: white
+spec:
+  capacity:
+    storage: 50Mi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: gold-stc-cka
+  hostPath:
+    path: /opt/gold-stc-cka
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - node01
+  ```
+  ```
+  kubectl apply -f pv.yaml
+  persistentvolume/gold-pv-cka created
+  ```
+
+  The next step will be to create the YAML for the PVC:
+  ```
+  vim pvc.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gold-pvc-cka
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: gold-stc-cka
+  selector:
+    matchLabels:
+      tier: white
+  volumeName: gold-pv-cka
+  resources:
+    requests:
+      storage: 30Mi
+  ```
+  ```
+  kubectl apply -f pvc.yaml
+  persistentvolumeclaim/gold-pvc-cka created
+  ```
+
+  Once the PVC has been applied, we will verify that it is in the “Bound” state.
+
+  ```
+  kubectl get pv,pvc
+  NAME                           CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+  persistentvolume/gold-pv-cka   50Mi       RWX            Retain           Bound    default/gold-pvc-cka   gold-stc-cka   <unset>                          4m8s
+
+  NAME                                 STATUS   VOLUME        CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+  persistentvolumeclaim/gold-pvc-cka   Bound    gold-pv-cka   50Mi       RWX            gold-stc-cka   <unset>                 3m16s
+  ```
+
+## Exercise 9 - Persistent Volume, Persistent Volume Claim, Pod
+
+  ### You are responsible for provisioning storage for a Kubernetes cluster. Your task is to create a PersistentVolume (PV), a PersistentVolumeClaim (PVC), and deploy a pod that uses the PVC for shared storage.
+  ### Requirements:
+  - Create a PersistentVolume (PV) named my-pv-cka with the following properties:
+      Storage capacity: 100Mi
+      Access mode: ReadWriteOnce
+      Host path: /mnt/data
+      Storage class: standard
+  - Create a PersistentVolumeClaim (PVC) named my-pvc-cka to claim storage from the my-pv-cka PV, with the following properties:
+      Storage class: standard
+      request storage: 100Mi (less than)
+  - Deploy a pod named my-pod-cka using the nginx container image.
+  - Mount the PVC, my-pvc-cka , to the pod at the path /var/www/html . Ensure that the PV, PVC, and pod are successfully created, and the pod is in a Running state.
+
+  NOTE: Binding and Pod might take time to come up, please have patience
+
+  **Solution:**
+
+  We will create the YAML file for the Persistent Volume with the characteristics requested in the statement:
+
+  ```
+  vim pv.yaml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: my-pv-cka
+spec:
+  capacity:
+    storage: 100Mi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: standard
+  hostPath:
+    path: /mnt/data
+  ```
+  ```
+  kubectl apply -f pv.yaml 
+  persistentvolume/my-pv-cka created
+  ```
+
+  The next step will be to create the YAML for the PVC:
+  ```
+  vim pvc.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc-cka
+spec:
+  storageClassName: standard
+  volumeName: my-pv-cka
+  resources:
+    requests:
+      storage: 70Mi
+  accessModes:
+  - ReadWriteOnce
+  ```
+  ```
+  kubectl apply -f pvc.yaml
+  persistentvolumeclaim/my-pvc-cka created
+  ```
+
+  We will proceed to create the pod, performing, as usual, a dry-run.
+
+  ```
+  kubectl run my-pod-cka --image=nginx --dry-run=client -oyaml > pod.yaml
+  ```
+  ```
+  vim pod.yaml
+
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: null
+    labels:
+      run: my-pod-cka
+    name: my-pod-cka
+  spec:
+    containers:
+    - image: nginx
+      name: my-pod-cka
+      volumeMounts:
+        - mountPath: "/var/www/html"
+          name: my-pvc-cka
+    dnsPolicy: ClusterFirst
+    restartPolicy: Always
+    volumes:
+      - name: my-pvc-cka
+        persistentVolumeClaim:
+          claimName: my-pvc-cka
+  status: {}
+  ```
+  ```
+  kubectl apply -f pod.yaml
+  pod/my-pod-cka created
+  ```
+
+  Finally, we will verify that the pod is in the running state and that the PV is Bound.
+ 
+  ```
+  kubectl get pv,pvc,pod
+  NAME                         CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+  persistentvolume/my-pv-cka   100Mi      RWO            Retain           Bound    default/my-pvc-cka   standard       <unset>                          9m22s
+
+  NAME                               STATUS   VOLUME      CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+  persistentvolumeclaim/my-pvc-cka   Bound    my-pv-cka   100Mi      RWO            standard       <unset>                 5m6s
+
+  NAME             READY   STATUS    RESTARTS   AGE
+  pod/my-pod-cka   1/1     Running   0          109s
   ```
